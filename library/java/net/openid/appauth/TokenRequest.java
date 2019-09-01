@@ -51,6 +51,8 @@ public class TokenRequest {
     @VisibleForTesting
     static final String KEY_CLIENT_ID = "clientId";
     @VisibleForTesting
+    static final String KEY_CLIENT_SECRET = "clientSecret";
+    @VisibleForTesting
     static final String KEY_GRANT_TYPE = "grantType";
     @VisibleForTesting
     static final String KEY_REDIRECT_URI = "redirectUri";
@@ -64,6 +66,8 @@ public class TokenRequest {
     static final String KEY_ADDITIONAL_PARAMETERS = "additionalParameters";
 
     public static final String PARAM_CLIENT_ID = "client_id";
+
+    public static final String PARAM_CLIENT_SECRET = "client_secret";
 
     @VisibleForTesting
     static final String PARAM_CODE = "code";
@@ -86,6 +90,7 @@ public class TokenRequest {
     private static final Set<String> BUILT_IN_PARAMS = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList(
                     PARAM_CLIENT_ID,
+                    PARAM_CLIENT_SECRET,
                     PARAM_CODE,
                     PARAM_CODE_VERIFIER,
                     PARAM_GRANT_TYPE,
@@ -135,6 +140,9 @@ public class TokenRequest {
      */
     @NonNull
     public final String clientId;
+
+    @NonNull
+    public final String clientSecret;
 
     /**
      * The type of token being sent to the token endpoint.
@@ -214,6 +222,9 @@ public class TokenRequest {
         @NonNull
         private String mClientId;
 
+        @NonNull
+        private String mClientSecret;
+
         @Nullable
         private String mGrantType;
 
@@ -240,9 +251,10 @@ public class TokenRequest {
          */
         public Builder(
                 @NonNull AuthorizationServiceConfiguration configuration,
-                @NonNull String clientId) {
+                @NonNull String clientId, @NonNull String clientSecret) {
             setConfiguration(configuration);
             setClientId(clientId);
+            setClientSecret(clientSecret);
             mAdditionalParameters = new LinkedHashMap<>();
         }
 
@@ -262,6 +274,12 @@ public class TokenRequest {
         @NonNull
         public Builder setClientId(@NonNull String clientId) {
             mClientId = checkNotEmpty(clientId, "clientId cannot be null or empty");
+            return this;
+        }
+
+        @NonNull
+        public Builder setClientSecret(@NonNull String clientSecret) {
+            mClientSecret = checkNotEmpty(clientSecret, "clientSecret cannot be null or empty");
             return this;
         }
 
@@ -428,6 +446,7 @@ public class TokenRequest {
             return new TokenRequest(
                     mConfiguration,
                     mClientId,
+                    mClientSecret,
                     grantType,
                     mRedirectUri,
                     mScope,
@@ -453,6 +472,7 @@ public class TokenRequest {
     private TokenRequest(
             @NonNull AuthorizationServiceConfiguration configuration,
             @NonNull String clientId,
+            @NonNull String clientSecret,
             @NonNull String grantType,
             @Nullable Uri redirectUri,
             @Nullable String scope,
@@ -462,6 +482,7 @@ public class TokenRequest {
             @NonNull Map<String, String> additionalParameters) {
         this.configuration = configuration;
         this.clientId = clientId;
+        this.clientSecret = clientSecret;
         this.grantType = grantType;
         this.redirectUri = redirectUri;
         this.scope = scope;
@@ -548,7 +569,7 @@ public class TokenRequest {
 
         TokenRequest.Builder builder = new TokenRequest.Builder(
                 AuthorizationServiceConfiguration.fromJson(json.getJSONObject(KEY_CONFIGURATION)),
-                JsonUtil.getString(json, KEY_CLIENT_ID))
+                JsonUtil.getString(json, KEY_CLIENT_ID), JsonUtil.getString(json, KEY_CLIENT_SECRET))
                 .setRedirectUri(JsonUtil.getUriIfDefined(json, KEY_REDIRECT_URI))
                 .setGrantType(JsonUtil.getString(json, KEY_GRANT_TYPE))
                 .setRefreshToken(JsonUtil.getStringIfDefined(json, KEY_REFRESH_TOKEN))
